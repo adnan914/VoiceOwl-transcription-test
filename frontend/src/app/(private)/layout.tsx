@@ -1,5 +1,6 @@
-import Header from "@/components/hoc/LayoutComponent/Header";
-import Footer from "@/components/hoc/LayoutComponent/Footer";
+// import Header from "@/components/hoc/LayoutComponent/Header";
+// import Footer from "@/components/hoc/LayoutComponent/Footer";
+import { ROUTES_PATH } from '@/utils/constant';
 import { cookies } from 'next/headers'  
 import { redirect, RedirectType } from 'next/navigation';
 
@@ -11,15 +12,15 @@ const PrivateLayout: React.FC<PrivateLayoutProps> = async ({ children }) => {
   const cookieStore = await cookies();
 
   const isLoggedin = cookieStore.get("token")?.value;
-  if(!isLoggedin) redirect('/login', RedirectType.push)
+  if(!isLoggedin) redirect(ROUTES_PATH.LOGIN, RedirectType.push)
 
   return (
     <div id="wrapper">
-      <Header />
+      {/* <Header /> */}
       <main>
         {children}
       </main>
-      <Footer />
+      {/* <Footer /> */}
     </div>
   )
 }

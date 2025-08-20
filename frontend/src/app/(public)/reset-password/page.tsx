@@ -3,36 +3,33 @@
 import Image from "next/image";
 import { useState, useRef } from "react";
 import SimpleReactValidator from 'simple-react-validator';
-import { login } from "@/store/actions/authAction";
-import { useAppDispatch } from "@/store/hooks";
-import { forSuccess } from "@/utils/CommonService";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 
-const LoginPage = () => {
-    const router = useRouter();
-    const dispatch = useAppDispatch();
-    const defaultForm = {
-        email: '', 
-        password: ''
-    };
-    const [form, setForm] = useState(defaultForm);
-    const [, forceUpdate] = useState(0); // fix: use number
+const ResetPasswordPage = () => {
+    const [form, setForm] = useState({
+        password: "",
+        confirmPassword: ""
+    });
+    const [, forceUpdate] = useState(0);
     const validator = useRef(new SimpleReactValidator({ autoForceUpdate: { forceUpdate: () => forceUpdate(n => n + 1) } }));
+    const [submitted, setSubmitted] = useState(false);
+    const router = useRouter();
     const [loading, setLoading] = useState(false);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setForm({ ...form, [e.target.name]: e.target.value });
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (validator.current.allValid()) {
+        setSubmitted(true);
+        if (
+            validator.current.allValid() &&
+            form.password === form.confirmPassword
+        ) {
             setLoading(true);
-            dispatch(login(form))
-            .then(res => {
-                if (res.success) {
-                    forSuccess("Login successfully.");
-                    router.push('/');
-                }
-            })
-            .finally(() => setLoading(false));
+            // Simulate async
+            setTimeout(() => setLoading(false), 1500);
         } else {
             validator.current.showMessages();
             forceUpdate(n => n + 1);
@@ -43,7 +40,6 @@ const LoginPage = () => {
         <div className="min-h-dvh grid grid-cols-1 lg:grid-cols-2 bg-secondary/90 text-background">
             {/* Left hero section with background image and copy */}
             <div className="relative hidden lg:block">
-                {/* Background image overlay */}
                 <Image
                     src="/window.svg"
                     alt="Background"
@@ -52,7 +48,6 @@ const LoginPage = () => {
                     priority
                 />
                 <div className="absolute inset-0 bg-black/40" />
-
                 <div className="relative z-10 h-full flex items-center">
                     <div className="max-w-screen-md mx-auto px-8">
                         <h1 className="text-foreground/80 font-heading text-3xl md:text-4xl leading-tight text-background font-[300]">
@@ -64,59 +59,49 @@ const LoginPage = () => {
                     </div>
                 </div>
             </div>
-
-            {/* Right login card */}
+            {/* Right reset password card */}
             <div className="relative flex items-center justify-center p-6 sm:p-10 bg-gradient-to-b from-background to-background/95 text-foreground">
                 <div className="w-full max-w-xl">
                     <div className="bg-background/95 border border-foreground/10 shadow-xl rounded-2xl p-6 sm:p-8">
-                        {/* Logo */}
                         <div className="flex items-center justify-center gap-3">
                             <Image src="/globe.svg" alt="SpinalScope Logo" width={40} height={40} />
                             <div className="text-center">
                                 <div className="text-3xl font-heading tracking-wide text-foreground">VoiceOwl</div>
                             </div>
                         </div>
-
-                        {/* Form */}
                         <form className="mt-8 space-y-5" onSubmit={handleSubmit} noValidate>
                             <div>
-                                <label className="block text-sm font-medium text-foreground/80">Email</label>
-                                <div className="mt-2 relative">
-                                    <input
-                                        type="email"
-                                        placeholder="Enter Email"
-                                        className="w-full rounded-md border border-foreground/20 bg-background px-4 py-3 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                                        value={form.email}
-                                        onChange={e => setForm({...form, email:e.target.value})}
-                                    />
-                                </div>
-                                <div className="text-red-500 text-xs mt-1 min-h-[18px]">
-                                    {validator.current.message('email', form.email, 'required|email')}
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-foreground/80">Password</label>
+                                <label className="block text-sm font-medium text-foreground/80">New Password</label>
                                 <div className="mt-2 relative">
                                     <input
                                         type="password"
-                                        placeholder="Enter Password"
+                                        name="password"
+                                        placeholder="Enter New Password"
                                         className="w-full rounded-md border border-foreground/20 bg-background px-4 py-3 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                                         value={form.password}
-                                        onChange={e => setForm({...form, password:e.target.value})}
-
+                                        onChange={handleChange}
                                     />
                                 </div>
                                 <div className="text-red-500 text-xs mt-1 min-h-[18px]">
                                     {validator.current.message('password', form.password, 'required|min:6')}
                                 </div>
                             </div>
-
-                            <div className="flex items-center justify-between">
-                                <div />
-                                <Link href="/forgot-password" className="text-sm text-primary hover:underline">Forgot Password?</Link>
+                            <div>
+                                <label className="block text-sm font-medium text-foreground/80">Confirm Password</label>
+                                <div className="mt-2 relative">
+                                    <input
+                                        type="password"
+                                        name="confirmPassword"
+                                        placeholder="Confirm New Password"
+                                        className="w-full rounded-md border border-foreground/20 bg-background px-4 py-3 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                                        value={form.confirmPassword}
+                                        onChange={handleChange}
+                                    />
+                                </div>
+                                <div className="text-red-500 text-xs mt-1 min-h-[18px]">
+                                    {submitted && form.password !== form.confirmPassword ? 'Passwords do not match' : ''}
+                                </div>
                             </div>
-
                             <button
                                 type="submit"
                                 className="w-full inline-flex items-center justify-center rounded-md bg-primary text-background px-4 py-3 font-medium hover:bg-primary/90"
@@ -125,19 +110,15 @@ const LoginPage = () => {
                                 {loading ? (
                                     <span className="flex items-center gap-2"><svg className="animate-spin h-5 w-5 text-background" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" /></svg>Loading...</span>
                                 ) : (
-                                    "Login"
+                                    "Reset Password"
                                 )}
                             </button>
-                            <div className="text-center mt-4">
-                                <span className="text-sm text-foreground/60">Don't have an account? </span>
-                                <Link href="/signup" className="text-primary hover:underline">Create Account</Link>
-                            </div>
                         </form>
                     </div>
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default LoginPage;
+export default ResetPasswordPage;

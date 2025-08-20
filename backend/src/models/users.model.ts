@@ -1,6 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
-import { UserDocument } from '@/types/user.type';
-import { Role, Status } from '@/enums';
+import { UserDocument } from '@/types';
+import { Status } from '@/enums';
 
 const UserSchema: Schema<UserDocument> = new Schema({
   firstName: { type: String, required: true },
@@ -8,9 +8,6 @@ const UserSchema: Schema<UserDocument> = new Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true, select: false },  // required: true for clarity
   status: { type: String, enum: Status, default: Status.ACTIVE },
-  profileImg: { type: String, default: null },
-  // createdAt: { type: Date, default: Date.now }, timestamps: true will create createdAt and updatedAt fields 
-  // updatedAt: { type: Date, default: Date.now }
 }, { timestamps: true });
 
 UserSchema.pre(['updateMany', 'updateOne', 'findOneAndUpdate'], function (next) {

@@ -34,7 +34,6 @@ const checkAuthorization = async (headers: any) => {
 
 export const verifyToken = (type = TokenType.ACCESS) => {
     return async (req: Request, res: Response, next: NextFunction) => {
-
         try {
             const token = await checkAuthorization(req.headers);
             const secret = getSecretByTokenType(type);

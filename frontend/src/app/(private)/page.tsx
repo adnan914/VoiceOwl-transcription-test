@@ -1,5 +1,13 @@
-import HomeComponent from "@/components/HomeComponent";
+import Transcription from "@/components/Transcription"
+import * as API from "@/store/serverApiAction/serverApis";
 
-const Home = () => <HomeComponent />;
+const TrancriptionPage = () => {
 
-export default Home;
+        //   const res = await API.get("/transcriptionList");
+        
+    return (
+        <Transcription  />
+    )
+}
+
+export default TrancriptionPage;

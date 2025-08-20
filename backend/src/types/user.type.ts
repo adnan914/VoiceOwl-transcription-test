@@ -1,5 +1,5 @@
 import { Types, Document } from "mongoose";
-import { Role, Status } from "@/enums";
+import { Status } from "@/enums";
 
 export interface CreateUserInput {
     firstName: string;
@@ -14,7 +14,6 @@ export interface UserDocument extends Document {
     firstName: string;
     lastName: string;
     password?: string;
-    profileImg?: string;
     status: Status;
     createdAt?: Date;
     updatedAt?: Date;
@@ -22,17 +21,7 @@ export interface UserDocument extends Document {
     refreshToken?: string;
 }
 
-export interface UpdateUserInput {
-    firstName: string;
-    lastName: string;
-}
-
 export interface LoginInput {
     email: string;
     password: string;
-}
-
-export interface UserListInput {
-    limit?: number;
-    lastSeenId?: string;
 }

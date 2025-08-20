@@ -2,9 +2,7 @@
 import { AppDispatch } from "../store";
 import * as API from "../serverApiAction/clientApis";
 import * as authReducer from "../reducers/authReducer";
-import { forSuccess } from "@/utils/CommonService";
 import Cookies from "js-cookie";
-
 
 export const refreshToken = async (dispatch: AppDispatch) => {
   const res: any = await API.get("/api/auth/refresh");
@@ -23,21 +21,26 @@ export const refreshToken = async (dispatch: AppDispatch) => {
   };
 };
 
+
 export const login = (formData: any) => async (dispatch: AppDispatch) => {
-    try {
-      const rawFormData = {
-        username: formData.get('username'),
-        password: formData.get('password')
-      }
-      const res = await API.post("/login", rawFormData);
-      if (res.success) {
-        dispatch(
-          authReducer.login({ user: {}, access_token: res.data.token, refresh_token: "" })
-        );
-        forSuccess("Login successfully.");
-      }
-      return res;
-    } catch (err) {
-        console.log(err);
+  try {
+    const res = await API.post("/login", formData);
+    if (res.success) {
+      dispatch(
+        authReducer.login({ user: res.data.user, access_token: res.data.accessToken, refresh_token: res.data.refreshToken })
+      );
     }
+    return res;
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+export const signUp = async (formData: any) => {
+  try {
+    const res = await API.post("/signup", formData);
+    return res;
+  } catch (err) {
+    console.log(err);
+  }
 };

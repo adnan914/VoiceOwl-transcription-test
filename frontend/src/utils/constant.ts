@@ -1,9 +1,12 @@
 export const PUBLIC_PATH = {
-  LOGIN:"/login"
+  LOGIN: "/login",
+  SIGNUP: "/signup",
+  FORGOT: "/forgot-password",
+  RESETPASSWORD: "/reset-password"
 };
 
 export const PRIVATE_PATH = {
-  HOME: "/home"
+  HOME: "/"
 }
 
 export const ROUTES_PATH = {

@@ -2,7 +2,7 @@ export class MessageUtil {
   static readonly USER_CREATE = "Sign up successfully";
   static readonly BLOG_CREATE = "Blog create successfully";
   static readonly LOGIN = "Login successfully";
-  static readonly LOG_OUT = "Log out successfully"; 
+  static readonly LOG_OUT = "Log out successfully";
   static readonly LOGIN_FAILED = "Login failed";
   static readonly TOKEN_GENERATED = "Token generated successfully";
   static readonly INVALID_TOKEN = "Invalid token";
@@ -28,5 +28,8 @@ export class MessageUtil {
   static readonly DB_CONNECTION_ERROR = "DB connection is not defined!";
   static readonly DB_CONNECTION = "Connected to the database.";
   static readonly MONGO_CONNECTION_ERROR = "MongoDB connection error.";
-  static readonly INVALID_SCHEMA_TYPE= "Invalid schema type"; 
+  static readonly INVALID_SCHEMA_TYPE = "Invalid schema type";
+  static readonly DOWNLOAD_AUDIO_FAIELD = "Audio download failed after retries";
+  static readonly ADD_SUCCESSFULLY = "Add Successfully.";
+
 }

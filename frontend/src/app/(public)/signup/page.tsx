@@ -3,19 +3,24 @@
 import Image from "next/image";
 import { useState, useRef } from "react";
 import SimpleReactValidator from 'simple-react-validator';
+import { signUp } from "@/store/actions/authAction";
 import { useRouter } from "next/navigation";
+import { forSuccess } from "@/utils/CommonService";
+import { ROUTES_PATH } from "@/utils/constant";
+import Link from "next/link";
 
 const SignUpPage = () => {
-    const [form, setForm] = useState({
-        firstname: "",
-        lastname: "",
+    const router = useRouter();
+    const defaultForm = {
+        firstName: "",
+        lastName: "",
         email: "",
         password: ""
-    });
+    }
+    const [form, setForm] = useState(defaultForm);
     const [, forceUpdate] = useState(0);
     const validator = useRef(new SimpleReactValidator({ autoForceUpdate: { forceUpdate: () => forceUpdate(n => n + 1) } }));
-    const [submitted, setSubmitted] = useState(false);
-    const router = useRouter();
+    const [loading, setLoading] = useState(false);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setForm({ ...form, [e.target.name]: e.target.value });
@@ -23,9 +28,16 @@ const SignUpPage = () => {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        setSubmitted(true);
         if (validator.current.allValid()) {
-            // Handle signup logic here
+            setLoading(true);
+            signUp(form)
+            .then(res => {
+                if (res.success) {
+                    forSuccess("User created successfully.");
+                    router.push(ROUTES_PATH.LOGIN);
+                }
+            })
+            .finally(() => setLoading(false));
         } else {
             validator.current.showMessages();
             forceUpdate(n => n + 1);
@@ -49,10 +61,10 @@ const SignUpPage = () => {
                 <div className="relative z-10 h-full flex items-center">
                     <div className="max-w-screen-md mx-auto px-8">
                         <h1 className="text-foreground/80 font-heading text-3xl md:text-4xl leading-tight text-background font-[300]">
-                            Create your VoiceOwl Account
+                            Welcome to the VoiceOwl
                         </h1>
                         <p className="text-foreground/80 mt-6 text-base md:text-lg text-background max-w-2xl font-extralight font-[200]">
-                            Join us to discover, learn, and grow. Unlock your full potential with VoiceOwl.
+                            Spinal Scope is where your journey begins — a place to discover, learn, and grow. Join us as we explore new horizons and unlock your full potential.
                         </p>
                     </div>
                 </div>
@@ -77,15 +89,15 @@ const SignUpPage = () => {
                                 <div className="mt-2 relative">
                                     <input
                                         type="text"
-                                        name="firstname"
+                                        name="firstName"
                                         placeholder="Enter First Name"
                                         className="w-full rounded-md border border-foreground/20 bg-background px-4 py-3 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                                        value={form.firstname}
+                                        value={form.firstName}
                                         onChange={handleChange}
                                     />
                                 </div>
                                 <div className="text-red-500 text-xs mt-1 min-h-[18px]">
-                                    {validator.current.message('firstname', form.firstname, 'required|alpha_space')}
+                                    {validator.current.message('firstName', form.firstName, 'required|alpha_space')}
                                 </div>
                             </div>
                             <div>
@@ -93,15 +105,15 @@ const SignUpPage = () => {
                                 <div className="mt-2 relative">
                                     <input
                                         type="text"
-                                        name="lastname"
+                                        name="lastName"
                                         placeholder="Enter Last Name"
                                         className="w-full rounded-md border border-foreground/20 bg-background px-4 py-3 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                                        value={form.lastname}
+                                        value={form.lastName}
                                         onChange={handleChange}
                                     />
                                 </div>
                                 <div className="text-red-500 text-xs mt-1 min-h-[18px]">
-                                    {validator.current.message('lastname', form.lastname, 'required|alpha_space')}
+                                    {validator.current.message('lastName', form.lastName, 'required|alpha_space')}
                                 </div>
                             </div>
                             <div>
@@ -115,7 +127,6 @@ const SignUpPage = () => {
                                         value={form.email}
                                         onChange={handleChange}
                                     />
-                                    <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-foreground/40">@</span>
                                 </div>
                                 <div className="text-red-500 text-xs mt-1 min-h-[18px]">
                                     {validator.current.message('email', form.email, 'required|email')}
@@ -132,9 +143,6 @@ const SignUpPage = () => {
                                         value={form.password}
                                         onChange={handleChange}
                                     />
-                                    <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/40">
-                                        ●
-                                    </button>
                                 </div>
                                 <div className="text-red-500 text-xs mt-1 min-h-[18px]">
                                     {validator.current.message('password', form.password, 'required|min:6')}
@@ -142,13 +150,18 @@ const SignUpPage = () => {
                             </div>
                             <button
                                 type="submit"
-                                className="w-full inline-flex items-center justify-center rounded-md bg-secondary text-background px-4 py-3 font-medium hover:bg-secondary/90"
+                                className="w-full inline-flex items-center justify-center rounded-md bg-primary text-background px-4 py-3 font-medium hover:bg-primary/90"
+                                disabled={loading}
                             >
-                                Create Account
+                                {loading ? (
+                                    <span className="flex items-center gap-2"><svg className="animate-spin h-5 w-5 text-background" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" /></svg>Loading...</span>
+                                ) : (
+                                    "Create Account"
+                                )}
                             </button>
                             <div className="text-center mt-4">
                                 <span className="text-sm text-foreground/60">Already have an account? </span>
-                                <a href="/login" className="text-primary hover:underline">Login</a>
+                                <Link href={ROUTES_PATH.LOGIN} className="text-primary hover:underline">Login</Link>
                             </div>
                         </form>
                     </div>
