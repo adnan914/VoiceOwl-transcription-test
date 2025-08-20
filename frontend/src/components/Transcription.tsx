@@ -5,43 +5,44 @@ import SimpleReactValidator from 'simple-react-validator';
 import TranscriptionTable from "@/components/TranscriptionTable";
 import { addTranscription } from "@/store/actions/transcriptionAction";
 import { forSuccess } from "@/utils/CommonService";
+import { TranscriptionType } from "@/types/transcriptType";
 
 const isAudioUrl = (url: string) => {
     // Accepts .mp3, .wav, .ogg, .aac, .flac, .m4a, .opus, .webm (audio only)
     return /\.(mp3|wav|ogg|aac|flac|m4a|opus|webm)$/i.test(url);
 };
 
-const initialRows = [
-    { _id: 1, audioUrl: "https://example.com/audio1.mp3", transcription: "Sample transcription 1", createdAd: "2025-08-20T19:39:28.223+00:00" },
-    { _id: 2, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-    { _id: 3, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-    { _id: 4, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-    { _id: 5, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-    { _id: 6, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-    { _id: 7, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-    { _id: 8, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-    { _id: 9, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-    { _id: 10, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-    { _id: 11, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-    { _id: 12, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-    { _id: 13, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-    { _id: 14, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-    { _id: 15, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-    { _id: 16, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-    { _id: 17, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-    { _id: 18, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-    { _id: 19, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-    { _id: 20, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-    { _id: 21, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-    { _id: 22, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-    { _id: 23, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-    { _id: 24, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-    { _id: 25, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-];
+// const initialRows = [
+//     { _id: 1, audioUrl: "https://example.com/audio1.mp3", transcription: "Sample transcription 1", createdAd: "2025-08-20T19:39:28.223+00:00" },
+//     { _id: 2, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
+//     { _id: 3, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
+//     { _id: 4, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
+//     { _id: 5, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
+//     { _id: 6, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
+//     { _id: 7, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
+//     { _id: 8, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
+//     { _id: 9, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
+//     { _id: 10, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
+//     { _id: 11, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
+//     { _id: 12, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
+//     { _id: 13, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
+//     { _id: 14, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
+//     { _id: 15, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
+//     { _id: 16, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
+//     { _id: 17, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
+//     { _id: 18, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
+//     { _id: 19, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
+//     { _id: 20, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
+//     { _id: 21, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
+//     { _id: 22, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
+//     { _id: 23, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
+//     { _id: 24, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
+//     { _id: 25, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
+// ];
 
-const AddTranscriptionAudioPage = () => {
+const Transcription = ({list} : {list: TranscriptionType[]}) => {
     const [url, setUrl] = useState("");
-    const [rows, setRows] = useState(initialRows);
+    const [rows, setRows] = useState(list);
     const [, forceUpdate] = useState(0);
     const validator = useRef(new SimpleReactValidator({
         autoForceUpdate: { forceUpdate: () => forceUpdate(n => n + 1) },
@@ -116,9 +117,9 @@ const AddTranscriptionAudioPage = () => {
                 </div>
             </div>
             {/* Table Section */}
-            <TranscriptionTable rows={rows} />
+            <TranscriptionTable rows={list} />
         </div>
     );
 };
 
-export default AddTranscriptionAudioPage;
+export default Transcription;

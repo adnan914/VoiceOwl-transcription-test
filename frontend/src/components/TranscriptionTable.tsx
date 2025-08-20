@@ -1,15 +1,9 @@
 import Link from "next/link";
 import React, { useState, useMemo } from "react";
-
-type Row = {
-  _id: number;
-  audioUrl: string;
-  transcription : string;
-  createdAd: string;
-};
+import {TranscriptionType} from "@/types/transcriptType"
 
 type Props = {
-  rows: Row[];
+  rows: TranscriptionType[];
 };
 
 const ROWS_PER_PAGE_OPTIONS = [5, 10, 20, 50];
@@ -104,7 +98,7 @@ const TranscriptionTable: React.FC<Props> = ({ rows }) => {
                     <Link href={row.audioUrl} target="_blank" rel="noopener noreferrer">{row.audioUrl}</Link>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground/80">{row.transcription}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground/80">{row.createdAd}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground/80">{row.createdAt}</td>
                 </tr>
               ))
             )}
