@@ -1,0 +1,66 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+## API Interaction Rules
+
+### **Server-Side API Calls (Server Actions)**
+- **Server API Calls**: API calls that need to be executed **on the server** should use the common methods defined in [serverApis.ts](mdc:src/store/serverApiAction/serverApis.ts) to interact with the API. This file defines reusable API methods for **GET** and **POST** requests.
+  - The [serverApis.ts](mdc:src/store/serverApiAction/serverApis.ts) file only exports methods (`post` and `get`) and should be imported into **server components**.
+  - Example of **server-side API call**:
+    ```tsx
+    import Listing from "@/component/Listing";
+    import * as API from "@/store/serverApiAction/serverApis";
+
+    const body = {
+        Level: "Studies",
+        Expand: true,
+        Query: {},
+        RequestedTags: [
+            "PatientName",
+            "PatientID",
+            "StudyDescription",
+            "StudyDate",
+            "StudyInstanceUID",
+            "ModalitiesInStudy",
+            "NumberOfStudyRelatedSeries",
+        ],
+    };
+
+    const HomePage = async () => {
+        const res = await API.post("/tools/find", body);
+        const studies = res.data;
+        return <Listing studies={studies} />;
+    };
+
+    export default HomePage;
+    ```
+  - In this example:
+    - `API.post()` is imported from [serverApis.ts](mdc:src/store/serverApiAction/serverApis.ts) and used within the server component `HomePage` to make a **POST** request to `/tools/find`.
+    - The [serverApis.ts](mdc:src/store/serverApiAction/serverApis.ts) functions return API responses which are used directly within the server component to render data.
+
+### **Client-Side API Calls**
+- **Client API Calls**: For client-side API interactions, especially when using hooks like `useEffect` or user event handlers like `handleChange`, the [clientApis.ts](mdc:src/store/serverApiAction/clientApis.ts) file should be used. This file includes logic for token management, error handling, and retrying failed API requests after refreshing the authentication token.
+  - Example of **client-side API call**:
+    ```tsx
+    import * as API from "@/store/serverApiAction/clientApis";
+
+    const body = { /* request body */ };
+
+    const handleSubmit = async () => {
+        try {
+            const response = await API.post("/some-endpoint", body);
+            // handle response
+        } catch (error) {
+            console.error("API call failed:", error);
+        }
+    };
+    ```
+  - **Token Refresh Logic**: The [clientApis.ts](mdc:src/store/serverApiAction/clientApis.ts) file includes mechanisms for refreshing the user’s token if the response status is 401 or 422. Once the token is refreshed, the API request is retried.
+
+
+
+
+
+

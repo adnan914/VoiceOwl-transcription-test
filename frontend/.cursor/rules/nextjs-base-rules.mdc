@@ -1,0 +1,233 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Next.js Project Rules for Cursor.ai (Next.js 14 with Server Components and Server Actions)
+
+## 1. Folder Structure and Organization
+
+- **Pages**: All pages are managed within the `src/app` directory. Routes are handled by folder-based routing with layout files in each directory.
+  - **Main Layout**: The primary layout file [layout.tsx](mdc:src/app/layout.tsx) is located in the `src/app` directory, acting as the base layout for the entire application.
+  - **Public Pages**: Public pages like login, signup, and forget password should be placed in the `(public)` folder within `src/app`. For example:
+    - `src/app/(public)/login/page.tsx`
+    - `src/app/(public)/signup/page.tsx`
+    - `src/app/(public)/forgot-password/page.tsx`
+    - **Minimal Layout**: These pages should **not** include headers, footers, or navigation bars to keep them minimal and focused on authentication-related content.
+  - **Private Pages**: Private pages like the dashboard, users list, and profile should be placed in the `(private)` folder within `src/app`. For example:
+    - `src/app/(private)/dashboard/page.tsx`
+    - `src/app/(private)/users-list/page.tsx`
+    - `src/app/(private)/profile/page.tsx`
+    - **Full Layout**: These pages will include headers, footers, and navigation bars, and will make use of the global layout defined in the main [layout.tsx](mdc:src/app/layout.tsx) file.
+  - **Authentication**: The [layout.tsx](mdc:src/app/(private)/layout.tsx) file within the `(private)` folder will handle user authentication checks. Users not logged in will be redirected to the login page.
+  
+- **Server Components**: Server components are used for fetching data on the server side. They are stored under the `src/app` directory and should be used in conjunction with the layouts for data fetching, authentication, and rendering before sending to the client.
+  
+- **Client Components**: Client components are located in the `/components` directory and should be used for interactivity that requires client-side rendering.
+
+## 2. API Interaction Rules
+
+### **Server-Side API Calls (Server Actions)**
+- **Server API Calls**: API calls that need to be executed **on the server** should use the common methods defined in [serverApis.ts](mdc:src/store/serverApiAction/serverApis.ts) to interact with the API. This file defines reusable API methods for **GET** and **POST** requests.
+  - The [serverApis.ts](mdc:src/store/serverApiAction/serverApis.ts) file only exports methods (`post` and `get`) and should be imported into **server components**.
+  - Example of **server-side API call**:
+    ```tsx
+    import Listing from "@/component/Listing";
+    import * as API from "@/store/serverApiAction/serverApis";
+
+    const body = {
+        Level: "Studies",
+        Expand: true,
+        Query: {},
+        RequestedTags: [
+            "PatientName",
+            "PatientID",
+            "StudyDescription",
+            "StudyDate",
+            "StudyInstanceUID",
+            "ModalitiesInStudy",
+            "NumberOfStudyRelatedSeries",
+        ],
+    };
+
+    const HomePage = async () => {
+        const res = await API.post("/tools/find", body);
+        const studies = res.data;
+        return <Listing studies={studies} />;
+    };
+
+    export default HomePage;
+    ```
+  - In this example:
+    - `API.post()` is imported from [serverApis.ts](mdc:src/store/serverApiAction/serverApis.ts) and used within the server component `HomePage` to make a **POST** request to `/tools/find`.
+    - The [serverApis.ts](mdc:src/store/serverApiAction/serverApis.ts) functions return API responses which are used directly within the server component to render data.
+
+### **Client-Side API Calls**
+- **Client API Calls**: For client-side API interactions, especially when using hooks like `useEffect` or user event handlers like `handleChange`, the [clientApis.ts](mdc:src/store/serverApiAction/clientApis.ts) file should be used. This file includes logic for token management, error handling, and retrying failed API requests after refreshing the authentication token.
+  - Example of **client-side API call**:
+    ```tsx
+    import * as API from "@/store/serverApiAction/clientApis";
+
+    const body = { /* request body */ };
+
+    const handleSubmit = async () => {
+        try {
+            const response = await API.post("/some-endpoint", body);
+            // handle response
+        } catch (error) {
+            console.error("API call failed:", error);
+        }
+    };
+    ```
+  - **Token Refresh Logic**: The [clientApis.ts](mdc:src/store/serverApiAction/clientApis.ts) file includes mechanisms for refreshing the user’s token if the response status is 401 or 422. Once the token is refreshed, the API request is retried.
+
+
+## 3. Authentication and Layout Management
+
+- **Authentication**: 
+  - **Public Routes**: Routes that do not require authentication (e.g., login, signup, password recovery) are placed under the `(public)` folder.
+  - **Private Routes**: Routes that require authentication (e.g., dashboard, users list, profile) are placed under the `(private)` folder.
+  - Use the `layout.tsx` file in both `(private)` and `(public)` folders to manage layout and authentication.
+  - **Private Route Authentication**: In the `layout.tsx` for the `(private)` folder, check the user’s authentication status. Redirect to the login page if the user is not authenticated.
+
+- **Folder-Specific Layouts**:
+  - **`src/app/layout.tsx`**: This file will serve as the **main layout** for the entire application and include global components such as headers, footers, and navigation.
+  - **`src/app/(private)/layout.tsx`**: This layout will include the global navigation and footer elements, as well as any additional private-specific UI features.
+  - **`src/app/(public)/layout.tsx`**: This layout will omit navigation, headers, and footers to keep the page lightweight and focused on authentication.
+  
+## 4. Coding Standards and Linting
+
+- **Prettier**: Use Prettier for code formatting. Ensure all code is formatted on save to maintain consistency.
+  
+- **ESLint**: Set up ESLint with recommended Next.js 14 configurations to handle server and client components correctly.
+  - Ensure linting rules are set for both server-side and client-side code.
+
+- **Code Splitting**: Ensure lazy loading and dynamic imports for heavy components or pages.
+  - Use `React.lazy()` and `Suspense` for optimizing performance.
+
+## 5.CSS & Asset Optimization
+
+-**SCSS Usage**: Store SCSS files in src/assets/scss organized by components, layouts, and utilities.
+    -Use .scss for all styling to leverage nesting, variables, and mixins.
+
+-**Modular and Reusable**: Structure styles modularly by creating component-specific SCSS files.
+    -Import them into a central main.scss or layout-level stylesheet.
+
+-**Scoped Styling**: Avoid global style conflicts.
+    -Use SCSS modules or follow BEM (Block Element Modifier) naming conventions.
+
+-**Design Tokens**: Centralize tokens like colors, spacing, and typography.
+    -Define them in _variables.scss and reuse logic in _mixins.scss.
+
+-**Font Management**: Store fonts in src/assets/fonts.
+    -Define @font-face rules in _fonts.scss for consistent usage across the project.
+
+-**Image Assets**: Store all project images in src/assets/images.
+    -Prefer optimized formats like .webp or .svg, and compress images where possible.
+
+-**Performance**: Minimize unused CSS and optimize loading.
+    -Use tree-shaking tools and import styles only where necessary.
+
+-**Naming Convention**: Maintain consistent class and file naming.
+    -Follow either camelCase or kebab-case, based on the team's convention.
+
+## 6. Component and Code Design
+
+- **Component Modularity**: All components are managed within the `src/components` directory
+  - Keep components small and reusable.
+  - Each component should have a single responsibility and be easily testable.
+  
+- **Props and State**: Always destructure props and avoid passing unnecessary props to components.
+  - Use default props to avoid undefined values and ensure type safety (TypeScript or PropTypes).
+
+- **Error Boundaries**: Use error boundaries to catch JavaScript errors in components and handle them gracefully.
+
+## 7. Shared Components Organization and Structure
+
+- **Shared Folder**:
+  - All custom UI components that are **frequently used** throughout the application should be stored in the `src/app/shared` folder.
+  - These shared components are meant to be used across multiple pages or components in the application to avoid duplication.
+
+  **Example**:
+  - For a shared component named `component-loader`, create a folder named `component-loader` under `src/app/shared`.
+    ```plaintext
+    src/
+    └── app/
+        └── shared/
+            └── component-loader/
+                └── index.tsx
+    ```
+
+- **Folder Structure for Each Shared Component**:
+  - Each shared component will have its own folder (e.g., `component-loader`), and inside this folder, there will be an `index.tsx` file that contains the main component code.
+  
+  **Example** (`component-loader/index.tsx`):
+  ```tsx
+  // src/app/shared/component-loader/index.tsx
+  import React from 'react';
+
+  const ComponentLoader = () => {
+    return (
+      <div className="loader-container">
+        <div className="loader">Loading...</div>
+      </div>
+    );
+  };
+
+  export default ComponentLoader;
+
+
+## 8. Utils Folder Structure and Organization
+
+- **Utils Folder**:
+  - **All helper functions and API calls** used across the project should be stored inside the `src/utils` folder.
+  - This folder should be **modular** and **well-structured** to separate concerns clearly and improve maintainability.
+
+  **Example**:
+  ```plaintext
+  src/
+  └── utils/
+      ├── axiosConfig/
+      │   ├── interceptors/
+      │   │   ├── authInterceptor.ts
+      │   │   ├── clientErrorHandler.ts
+      │   │   ├── serverErrorHandler.ts
+      │   │   └── successHandler.ts
+      │   └── index.ts
+      ├── apiServices.ts
+      ├── commonServices.ts
+      └── serverCommonServices.ts
+  
+-**File Responsibilities**:
+
+-**authInterceptor.ts**: Should add authentication headers like **X-Auth-Token** or **AuthToken** to every request.
+
+-**clientErrorHandler.ts**: Should handle client-side errors (status codes like 400, 422) and return specific user-friendly messages.
+
+-**serverErrorHandler.ts**: Should handle server-side errors (like 500, 503) and return generic or logged server error messages.
+
+-**successHandler.ts**: Should handle successful API calls and return only the relevant response data.
+
+-**index.ts**: Should create and export the Axios instance by appending the correct base URL and applying all necessary interceptors.
+
+-**API Service Rules**:
+
+-**apiServices.ts**: Should contain common API call functions (e.g., **fetchUserList**, **submitFormData**) to avoid repeating axios logic.
+    -These services should only import and use the configured Axios instance from **axiosConfig**.
+
+-**Client/Server Common Services**:
+
+-**commonServices.ts**: Should include utility functions used on the client-side (e.g., **validateEmail**, **formatCurrency**).
+
+-**serverCommonServices.ts**: Should include utility functions used on the server-side (e.g., **formatDate**, **sanitizePayload**).
+
+
+## 9. Performance and Optimization
+
+- **Image Optimization**: Use `next/image` for automatic image optimization.
+  - Provide `width` and `height` attributes for images to ensure proper layout.
+
+- **Static Assets**: Store static assets (e.g., images, icons) in the `/public` directory.
+  - Use CDN for large assets and cache them to reduce load times.
+
+- **Lazy Loading**: Implement lazy loading for components that are not essential for the initial page load.

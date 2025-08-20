@@ -1,0 +1,143 @@
+---
+description: Tailwind CSS, design tokens, and layout rules. Always use Tailwind classes and theme variables.
+globs: 
+alwaysApply: false
+---
+
+## CSS, Design, and Layout Rules
+
+- **Tailwind-first**: Use Tailwind utility classes for all styling. Avoid custom CSS except for global tokens and resets.
+- **Design tokens**: Colors and fonts must be defined as CSS variables and mapped into Tailwind tokens via `@theme` so they are available as utilities.
+- **Fonts**: 
+  - Headings use: "Zodiak Variable, Georgia, sans-serif"
+  - Paragraph/body use: "Cabinetgrotesk Variable, Georgia, sans-serif"
+- **Colors**:
+  - Primary: `#333233`
+  - Secondary: `#000000`
+
+## Theme Setup (globals.css)
+
+Add or update tokens in `src/app/globals.css`. Keep Tailwind v4 `@theme` inline configuration and expose tokens as utilities:
+
+```css
+@import "tailwindcss";
+
+:root {
+  /* Base surface tokens */
+  --background: #ffffff;
+  --foreground: #171717;
+
+  /* Project design tokens */
+  --brand-primary: #333233;   /* Primary */
+  --brand-secondary: #000000; /* Secondary */
+
+  /* Fonts */
+  --font-heading-var: "Zodiak Variable, Georgia, sans-serif";
+  --font-body-var: "Cabinetgrotesk Variable, Georgia, sans-serif";
+}
+
+@theme inline {
+  /* Map to Tailwind color utilities */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--brand-primary);
+  --color-secondary: var(--brand-secondary);
+
+  /* Map to Tailwind font utilities */
+  --font-heading: var(--font-heading-var);
+  --font-body: var(--font-body-var);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+/* Global element defaults */
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+```
+
+Notes:
+- Defining `--color-primary` and `--color-secondary` inside `@theme` creates `text-primary`, `bg-primary`, `border-primary`, etc.
+- Defining `--font-heading` and `--font-body` creates `font-heading` and `font-body` utilities.
+
+## Usage Rules
+
+- **Typography**
+  - Headings: Use `font-heading`. Example sizes:
+    - `h1`: `text-4xl md:text-5xl`
+    - `h2`: `text-3xl md:text-4xl`
+    - `h3`: `text-2xl md:text-3xl`
+  - Body text: Use `font-body` with readable sizes: `text-base md:text-lg`.
+  - Color: Prefer `text-foreground` for base; accent with `text-primary` sparingly.
+
+- **Color Application**
+  - Brand accents: `text-primary`, `bg-primary`, `border-primary`.
+  - Neutral surfaces: `bg-background`, `text-foreground`.
+  - Emphasis: use `text-foreground/90` or `text-foreground` instead of bespoke grays.
+
+- **Spacing and Layout**
+  - Use Tailwind spacing scale only (`p-6`, `gap-4`, etc.).
+  - Layout: prefer `grid` and `flex` utilities; keep nesting shallow.
+  - Containers: center with `max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8`.
+  - Breakpoints: `sm`, `md`, `lg`, `xl`, `2xl`. Always design mobile-first.
+
+- **Components**
+  - Buttons: 
+    - Primary: `bg-primary text-background hover:bg-primary/90`
+    - Secondary: `bg-secondary text-background hover:bg-secondary/90`
+  - Cards: `bg-background border border-foreground/10 shadow-sm rounded-lg`.
+  - Inputs: `border-foreground/20 focus:ring-primary focus:border-primary`.
+
+## Examples
+
+```tsx
+// Heading and paragraph
+export function Hero() {
+  return (
+    <section className="bg-background text-foreground py-12">
+      <div className="max-w-screen-xl mx-auto px-4">
+        <h1 className="font-heading text-4xl md:text-5xl text-primary">Spinal Scope</h1>
+        <p className="mt-4 font-body text-base md:text-lg text-foreground/80 max-w-2xl">
+          Build modern apps with a consistent design system powered by Tailwind.
+        </p>
+      </div>
+    </section>
+  );
+}
+```
+
+```tsx
+// Button variants
+export function Buttons() {
+  return (
+    <div className="flex items-center gap-3">
+      <button className="inline-flex items-center justify-center rounded-md px-4 py-2 bg-primary text-background hover:bg-primary/90">
+        Primary
+      </button>
+      <button className="inline-flex items-center justify-center rounded-md px-4 py-2 bg-secondary text-background hover:bg-secondary/90">
+        Secondary
+      </button>
+    </div>
+  );
+}
+```
+
+## Do and Don't
+
+- Do: Use `text-primary`/`bg-primary` for brand accents.
+- Do: Use `font-heading` for headings and `font-body` for body/paragraph text.
+- Do: Keep spacing and sizing from Tailwind scale; use responsive modifiers.
+- Don't: Hardcode hex colors in components; always use the tokens.
+- Don't: Add custom CSS classes unless a utility composition is impossible.
+
+## File References
+
+- Update tokens in `src/app/globals.css` as shown above.
+- Use the utilities directly in components; no additional Tailwind config files are required (Tailwind v4).
+
