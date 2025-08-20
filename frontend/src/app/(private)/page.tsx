@@ -6,7 +6,7 @@ const TrancriptionPage = async () => {
     const res = await API.get("/transcriptionList");
     console.log(res)       
     return (
-        <Transcription list = {res.data.transcriptData} />
+        <Transcription list = {res.data.transcriptData} totalPages = { res.data.totalPages } />
     )
 }
 

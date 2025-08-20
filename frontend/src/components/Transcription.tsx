@@ -40,7 +40,7 @@ const isAudioUrl = (url: string) => {
 //     { _id: 25, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
 // ];
 
-const Transcription = ({list} : {list: TranscriptionType[]}) => {
+const Transcription = ({list, totalPages} : {list: TranscriptionType[], totalPages:number}) => {
     const [url, setUrl] = useState("");
     const [rows, setRows] = useState(list);
     const [, forceUpdate] = useState(0);
@@ -66,6 +66,7 @@ const Transcription = ({list} : {list: TranscriptionType[]}) => {
                         { ...res.data.transcript },
                         ...rows
                     ]);
+                    console.log(rows)
                     setUrl("");
                     forSuccess("Add successfully.");
                     validator.current.hideMessages();
@@ -117,7 +118,7 @@ const Transcription = ({list} : {list: TranscriptionType[]}) => {
                 </div>
             </div>
             {/* Table Section */}
-            <TranscriptionTable rows={list} />
+            <TranscriptionTable rows={list} totalPages={totalPages} />
         </div>
     );
 };

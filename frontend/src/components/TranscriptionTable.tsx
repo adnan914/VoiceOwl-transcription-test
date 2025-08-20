@@ -1,9 +1,11 @@
 import Link from "next/link";
 import React, { useState, useMemo } from "react";
+import moment from "moment";
 import {TranscriptionType} from "@/types/transcriptType"
 
 type Props = {
   rows: TranscriptionType[];
+  totalPages: number
 };
 
 const ROWS_PER_PAGE_OPTIONS = [5, 10, 20, 50];
@@ -21,9 +23,9 @@ function getPageNumbers(current: number, total: number) {
   return range.filter((v, i, arr) => arr.indexOf(v) === i);
 }
 
-const TranscriptionTable: React.FC<Props> = ({ rows }) => {
+const TranscriptionTable: React.FC<Props> = ({ rows, totalPages }) => {
   const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(totalPages);
   const [inputPage, setInputPage] = useState("");
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -39,7 +41,7 @@ const TranscriptionTable: React.FC<Props> = ({ rows }) => {
   }, [rows, search]);
 
   // Pagination
-  const totalPages = Math.max(1, Math.ceil(filteredRows.length / rowsPerPage));
+  // const totalPages = Math.max(1, Math.ceil(filteredRows.length / rowsPerPage));
   const paginatedRows = filteredRows.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
   // Handle page change
@@ -60,7 +62,7 @@ const TranscriptionTable: React.FC<Props> = ({ rows }) => {
   const pageNumbers = getPageNumbers(page, totalPages);
 
   return (
-    <div className="w-full max-w-4xl mt-12">
+    <div className="w-full max-w-6xl mt-12">
       {/* Search and page counts */}
       <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <input
@@ -83,22 +85,25 @@ const TranscriptionTable: React.FC<Props> = ({ rows }) => {
               <th className="px-6 py-3 text-left text-xs font-medium text-foreground/80 uppercase tracking-wider">ID</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-foreground/80 uppercase tracking-wider">Audio URL</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-foreground/80 uppercase tracking-wider">Transcribed Text</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-foreground/80 uppercase tracking-wider">Created At</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-foreground/10">
             {paginatedRows.length === 0 ? (
               <tr>
-                <td colSpan={3} className="px-6 py-8 text-center text-foreground/60">No results found.</td>
+                <td colSpan={4} className="px-6 py-8 text-center text-foreground/60">No results found.</td>
               </tr>
             ) : (
               paginatedRows.map(row => (
                 <tr key={row._id} className="hover:bg-secondary/30">
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground/90">{row._id}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-primary underline break-all">
-                    <Link href={row.audioUrl} target="_blank" rel="noopener noreferrer">{row.audioUrl}</Link>
+                    <Link href={row.audioUrl} target="_blank" rel="noopener noreferrer" title={row.audioUrl}>
+                      {row.audioUrl.length > 30 ? `${row.audioUrl.slice(0, 20)}...` : row.audioUrl}
+                    </Link>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground/80">{row.transcription}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground/80">{row.createdAt}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground/80" title={row.transcription}>{row.transcription}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground/80">{moment(row.createdAt).format('YYYY-MM-DD')}</td>
                 </tr>
               ))
             )}

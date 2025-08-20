@@ -13,9 +13,20 @@ export class CommonUtils {
     return sign(data, secret, { expiresIn: options.expiresIn });
   }
 
+  static generateRandomText(): string {
+    const samples = [
+      "Hello, this is a sample transcription.",
+      "The quick brown fox jumps over the lazy dog.",
+      "VoiceOwl test transcription data.",
+      "Randomly generated text for audio file.",
+      "This is a mocked transcription response."
+    ];
+
+    return samples[Math.floor(Math.random() * samples.length)];
+  }
+
   static async downloadWithRetry(url: string, retries: number = 1): Promise<string> {
     const filePath = path.join(__dirname, "../../src/audio", Date.now() + ".mp3");
-    console.log(filePath)
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
         const response = await axios.get(url, { responseType: "stream" });
