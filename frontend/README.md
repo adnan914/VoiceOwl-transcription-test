@@ -1,36 +1,86 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# VoiceOwl Transcription Frontend
 
-## Getting Started
+A modern web client for VoiceOwl, built with Next.js, React, Redux Toolkit, and TailwindCSS. Provides user authentication, audio transcription upload, and viewing of transcription history.
 
-First, run the development server:
+---
 
+## Tech Stack
+- Next.js (App Router)
+- React 19
+- Redux Toolkit
+- TypeScript
+- TailwindCSS
+- Axios
+
+---
+
+## Prerequisites
+- **Node.js** v18+
+- **npm** v9+ (or yarn/pnpm)
+
+---
+
+## Installation
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Clone the repository (if not already)
+git clone <repo-url>
+cd frontend
+
+# Install dependencies
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment Variables
+The backend API URL is currently set in `src/utils/config.ts`:
+```ts
+export const config = {
+  API_URL: "http://localhost:3001/api/v1/"
+}
+```
+To change the backend URL, edit this file. (For production, update to your deployed backend URL.)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## Running the Project
 
-To learn more about Next.js, take a look at the following resources:
+### Development
+```bash
+npm run dev
+```
+- Runs the app at [http://localhost:3000]
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Production
+```bash
+npm run build
+npm start
+```
+- Builds and starts the optimized production server.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## Build & Deployment
+- **Build:** `npm run build`
+- **Start:** `npm start`
+- **Deploy:** You can deploy to Vercel, Netlify, or any platform supporting Next.js.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Common Issues & Troubleshooting
+- **API not working:** Ensure the backend is running and `API_URL` is correct.
+- **Port in use:** Change the port in `env` or stop the conflicting process.
+- **CORS errors:** Make sure backend CORS is configured to allow frontend origin.
+
+---
+
+## Scripts
+- `npm run dev` — Start in development mode
+- `npm run build` — Build for production
+- `npm start` — Start production server
+- `npm run lint` — Run ESLint
+
+---
+
+## License
+MIT
