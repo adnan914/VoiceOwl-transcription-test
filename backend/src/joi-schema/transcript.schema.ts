@@ -7,6 +7,7 @@ export const transcriptSchema: Joi.ObjectSchema<TranscriptInput> = Joi.object({
 
 export const transcriptListSchema: Joi.ObjectSchema<TranscriptListInput> = Joi.object({
     limit: Joi.number(),
-    lastSeenId: Joi.string()
+    page: Joi.number(),
+    search: Joi.string().allow(null).allow('')
 });
 

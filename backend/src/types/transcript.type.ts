@@ -14,11 +14,7 @@ export interface TranscriptInput {
 }
 
 export interface TranscriptListInput {
-    limit?: number;
-    page?: number;
-}
-
-export interface TranscriptDocument {
-    limit?: number;
-    lastSeenId?: string;
+    limit: 10,
+    page: 1,
+    search: ''
 }

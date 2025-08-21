@@ -1,4 +1,5 @@
 'use client';
+import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { BehaviorSubject } from "rx";
 
@@ -13,11 +14,25 @@ export const isDialogOpen = new BehaviorSubject<any>({
   onConfirm: () => { },
 });
 
-export const forSuccess = (message: string, id?: string) => 
+export const forSuccess = (message: string, id?: string) =>
   toast.success(message, { autoClose: 3000, toastId: id ? id : 1 })
 
-export const forError = (message: string, id?: string) => 
+export const forError = (message: string, id?: string) =>
   toast.error(message, { autoClose: 3000, toastId: id ? id : 1 })
 
-export const forWarning = (message: string, id?: string) => 
+export const forWarning = (message: string, id?: string) =>
   toast.warning(message, { autoClose: 3000, toastId: id ? id : 1 })
+
+export const useDebounce = (value: any, delay: number) => {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => clearTimeout(handler);
+  }, [value, delay]);
+
+  return debouncedValue;
+}

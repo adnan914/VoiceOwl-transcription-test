@@ -1,49 +1,68 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import SimpleReactValidator from 'simple-react-validator';
 import TranscriptionTable from "@/components/TranscriptionTable";
-import { addTranscription } from "@/store/actions/transcriptionAction";
-import { forSuccess } from "@/utils/CommonService";
-import { TranscriptionType } from "@/types/transcriptType";
+import { addTranscription, getTranscriptionData } from "@/store/actions/transcriptionAction";
+import { forSuccess, useDebounce } from "@/utils/CommonService";
+import { TranscriptionType, TranscriptionListInput } from "@/types/transcriptType";
+import { useRouter } from "next/navigation";
+import { useAppDispatch } from "@/store/hooks";
+import { logout as logoutAction } from "@/store/reducers/authReducer";
+import { ROUTES_PATH } from "@/utils/constant";
 
 const isAudioUrl = (url: string) => {
     // Accepts .mp3, .wav, .ogg, .aac, .flac, .m4a, .opus, .webm (audio only)
     return /\.(mp3|wav|ogg|aac|flac|m4a|opus|webm)$/i.test(url);
 };
 
-// const initialRows = [
-//     { _id: 1, audioUrl: "https://example.com/audio1.mp3", transcription: "Sample transcription 1", createdAd: "2025-08-20T19:39:28.223+00:00" },
-//     { _id: 2, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-//     { _id: 3, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-//     { _id: 4, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-//     { _id: 5, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-//     { _id: 6, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-//     { _id: 7, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-//     { _id: 8, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-//     { _id: 9, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-//     { _id: 10, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-//     { _id: 11, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-//     { _id: 12, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-//     { _id: 13, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-//     { _id: 14, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-//     { _id: 15, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-//     { _id: 16, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-//     { _id: 17, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-//     { _id: 18, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-//     { _id: 19, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-//     { _id: 20, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-//     { _id: 21, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-//     { _id: 22, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-//     { _id: 23, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-//     { _id: 24, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-//     { _id: 25, audioUrl: "https://example.com/audio2.wav", transcription: "Sample transcription 2", createdAd: "2025-08-20T19:39:28.223+00:00" },
-// ];
-
-const Transcription = ({list, totalPages} : {list: TranscriptionType[], totalPages:number}) => {
+const Transcription = ({list, totalCount, defaultParams} : {list: TranscriptionType[], totalCount:number, defaultParams:TranscriptionListInput}) => {
+    const router = useRouter();
+    const dispatch = useAppDispatch();
     const [url, setUrl] = useState("");
-    const [rows, setRows] = useState(list);
     const [, forceUpdate] = useState(0);
+    const [rows, setRows] = useState(list);
+    const [count, setCount] = useState(totalCount);
+    const [pagination, setPagination] = useState(defaultParams);
+    const [loading, setLoading] = useState(false);
+    const debouncedQuery = useDebounce(pagination.search, 500);
+    
+    useEffect(() => {
+        setTranscriptData(pagination);
+    }, [debouncedQuery]);
+
+    const handlePageChange = async (page: number) => {
+        const paginate = {...pagination, page};
+        setPagination(paginate); 
+        setTranscriptData(paginate); 
+    }
+
+    const handleLimitChange = async (limit: number) => {
+        const page = Math.ceil(count / limit);
+        const paginate = {...pagination, limit, page};
+        setPagination(paginate); 
+        setTranscriptData(paginate);
+    }
+
+    const setTranscriptData = async (paginate: TranscriptionListInput) =>{
+        const result = await getTranscriptionData(paginate);
+        if(result.success){
+            setRows(result.data.transcriptData);
+            setCount(result.data.totalCount);
+        }
+    }
+
+    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const paginate = {...pagination, search: e.target.value };
+        setPagination(paginate);
+    }
+
+    const handleLogout = () => {
+        dispatch(logoutAction());
+        router.push(ROUTES_PATH.LOGIN);
+    }
+
+
     const validator = useRef(new SimpleReactValidator({
         autoForceUpdate: { forceUpdate: () => forceUpdate(n => n + 1) },
         validators: {
@@ -53,7 +72,6 @@ const Transcription = ({list, totalPages} : {list: TranscriptionType[], totalPag
             },
         },
     }));
-    const [loading, setLoading] = useState(false);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -62,11 +80,7 @@ const Transcription = ({list, totalPages} : {list: TranscriptionType[], totalPag
             addTranscription({audioUrl: url})
             .then((res)=>{
                 if(res.success){
-                    setRows([
-                        { ...res.data.transcript },
-                        ...rows
-                    ]);
-                    console.log(rows)
+                    setTranscriptData(pagination)
                     setUrl("");
                     forSuccess("Add successfully.");
                     validator.current.hideMessages();
@@ -82,6 +96,15 @@ const Transcription = ({list, totalPages} : {list: TranscriptionType[], totalPag
 
     return (
         <div className="min-h-dvh flex flex-col items-center justify-center bg-secondary/90 text-background py-12">
+            <div className="w-full max-w-xl mb-4 flex justify-end">
+                <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="inline-flex items-center justify-center rounded-md border border-foreground/20 text-foreground px-4 py-2 hover:bg-foreground/10"
+                >
+                    Logout
+                </button>
+            </div>
             <div className="w-full max-w-xl">
                 <div className="bg-background/95 border border-foreground/10 shadow-xl rounded-2xl p-6 sm:p-8">
                     <div className="text-center mb-6">
@@ -117,8 +140,16 @@ const Transcription = ({list, totalPages} : {list: TranscriptionType[], totalPag
                     </form>
                 </div>
             </div>
+
             {/* Table Section */}
-            <TranscriptionTable rows={list} totalPages={totalPages} />
+            <TranscriptionTable 
+                rows={rows}
+                pagination={pagination}
+                count={count}
+                handlePageChange={handlePageChange}
+                handleLimitChange={handleLimitChange}
+                handleSearch={handleSearch}
+            />
         </div>
     );
 };

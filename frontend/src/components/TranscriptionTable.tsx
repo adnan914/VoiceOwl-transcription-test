@@ -1,65 +1,39 @@
 import Link from "next/link";
-import React, { useState, useMemo } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import moment from "moment";
-import {TranscriptionType} from "@/types/transcriptType"
+import {TranscriptionType, TranscriptionListInput} from "@/types/transcriptType"
 
 type Props = {
   rows: TranscriptionType[];
-  totalPages: number
+  pagination: TranscriptionListInput;
+  count: number;
+  handlePageChange: (page:number) => void;
+  handleLimitChange: (limit:number) => void;
+  handleSearch: (e:React.ChangeEvent<HTMLInputElement>) => void;
 };
 
-const ROWS_PER_PAGE_OPTIONS = [5, 10, 20, 50];
-
-function getPageNumbers(current: number, total: number) {
-  const delta = 2;
-  const range = [];
-  for (let i = Math.max(2, current - delta); i <= Math.min(total - 1, current + delta); i++) {
-    range.push(i);
-  }
-  if (current - delta > 2) range.unshift('...');
-  if (current + delta < total - 1) range.push('...');
-  range.unshift(1);
-  if (total > 1) range.push(total);
-  return range.filter((v, i, arr) => arr.indexOf(v) === i);
-}
-
-const TranscriptionTable: React.FC<Props> = ({ rows, totalPages }) => {
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(totalPages);
+const TranscriptionTable: React.FC<Props> = ({ rows, pagination, count, handlePageChange, handleLimitChange, handleSearch }) => {
   const [inputPage, setInputPage] = useState("");
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const ROWS_PER_PAGE_OPTIONS = [5, 10, 20, 50];
+  const totalPages = Math.ceil(count / pagination.limit);
+  const startIndex = (pagination.page - 1) * pagination.limit;
+  const endIndex =  startIndex + pagination.limit;
+  const lastPageRef = useRef<number | null>(null);
+  // const goToPage = (page: number) => {
+  //   if (page < 1 || page > totalPages) return;
+  //   handlePageChange(page)
+  //   setInputPage("");
+  // };
 
-  // Filter rows by id, url, or text
-  const filteredRows = useMemo(() => {
-    const s = search.trim().toLowerCase();
-    if (!s) return rows;
-    return rows.filter(row =>
-      row._id.toString().includes(s) ||
-      row.audioUrl.toLowerCase().includes(s) ||
-      row.transcription.toLowerCase().includes(s)
-    );
-  }, [rows, search]);
+  const goToPage = useCallback((page: number) => {
+    if (page < 1 || page > totalPages) return;
 
-  // Pagination
-  // const totalPages = Math.max(1, Math.ceil(filteredRows.length / rowsPerPage));
-  const paginatedRows = filteredRows.slice((page - 1) * rowsPerPage, page * rowsPerPage);
+    // prevent re-calling same page
+    if (lastPageRef.current === page) return;
 
-  // Handle page change
-  const goToPage = (p: number) => {
-    if (p < 1 || p > totalPages) return;
-    setPage(p);
-    setInputPage("");
-  };
-
-  // Reset to page 1 on search or rowsPerPage change
-  React.useEffect(() => { setPage(1); }, [search, rowsPerPage]);
-
-  // Page counts
-  const startIdx = filteredRows.length === 0 ? 0 : (page - 1) * rowsPerPage + 1;
-  const endIdx = Math.min(page * rowsPerPage, filteredRows.length);
-
-  // Pagination numbers
-  const pageNumbers = getPageNumbers(page, totalPages);
+    lastPageRef.current = page;
+    handlePageChange(page);
+  }, [totalPages, handlePageChange]);
 
   return (
     <div className="w-full max-w-6xl mt-12">
@@ -69,19 +43,20 @@ const TranscriptionTable: React.FC<Props> = ({ rows, totalPages }) => {
           type="text"
           placeholder="Search by ID, URL, or Text"
           className="rounded-md border border-foreground/20 bg-background px-4 py-2 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary w-full max-w-xs"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
+          value={pagination.search}
+          onChange={handleSearch}
         />
         <span className="text-xs text-foreground/60 sm:text-right">
-          {filteredRows.length === 0
+          {rows.length === 0
             ? "No results"
-            : `Showing ${startIdx}-${endIdx} of ${filteredRows.length}`}
+            : `Showing ${startIndex+1}-${Math.min(endIndex, count)} of ${rows.length}`}
         </span>
       </div>
       <div className="overflow-x-auto rounded-2xl shadow-xl border border-foreground/10 bg-background/95">
         <table className="min-w-full divide-y divide-foreground/10">
           <thead>
             <tr className="bg-secondary/80">
+              <th className="px-6 py-3 text-left text-xs font-medium text-foreground/80 uppercase tracking-wider">#</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-foreground/80 uppercase tracking-wider">ID</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-foreground/80 uppercase tracking-wider">Audio URL</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-foreground/80 uppercase tracking-wider">Transcribed Text</th>
@@ -89,13 +64,14 @@ const TranscriptionTable: React.FC<Props> = ({ rows, totalPages }) => {
             </tr>
           </thead>
           <tbody className="divide-y divide-foreground/10">
-            {paginatedRows.length === 0 ? (
+            {rows.length === 0 ? (
               <tr>
                 <td colSpan={4} className="px-6 py-8 text-center text-foreground/60">No results found.</td>
               </tr>
             ) : (
-              paginatedRows.map(row => (
+              rows.map((row, i) => (
                 <tr key={row._id} className="hover:bg-secondary/30">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground/90">{i+startIndex+1}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground/90">{row._id}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-primary underline break-all">
                     <Link href={row.audioUrl} target="_blank" rel="noopener noreferrer" title={row.audioUrl}>
@@ -116,40 +92,40 @@ const TranscriptionTable: React.FC<Props> = ({ rows, totalPages }) => {
           <span>Rows per page:</span>
           <select
             className="rounded border border-foreground/20 bg-background px-2 py-1 text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-            value={rowsPerPage}
-            onChange={e => setRowsPerPage(Number(e.target.value))}
+            value={pagination.limit}
+            onChange={e => {
+              handleLimitChange(Number(e.target.value))
+            }}
           >
             {ROWS_PER_PAGE_OPTIONS.map(opt => (
               <option key={opt} value={opt}>{opt}</option>
             ))}
           </select>
-          <span>{startIdx}-{endIdx} of {filteredRows.length}</span>
+          <span>{startIndex}-{endIndex} of {totalPages}</span>
           <button
             className="px-4 py-2 rounded text-base disabled:opacity-50 hover:underline"
-            onClick={() => goToPage(page - 1)}
-            disabled={page === 1}
+            onClick={() => handlePageChange(pagination.page - 1)}
+            disabled={pagination.page === 1}
             aria-label="Previous page"
           >
             &laquo;
           </button>
-          {pageNumbers.map((num, idx) =>
-            typeof num === 'number' ? (
+          {totalPages ? Array.from({length: Math.min(5, totalPages)}, (_, i)=>{
+            const pageNumber = i+1;
+            return(
               <button
-                key={num}
-                className={`px-2 py-1 rounded ${page === num ? 'bg-primary text-background' : 'hover:underline'}`}
-                onClick={() => goToPage(num)}
-                disabled={page === num}
-              >
-                {num}
-              </button>
-            ) : (
-              <span key={"ellipsis-" + idx} className="px-2">...</span>
+                key={pageNumber}
+                className={`px-2 py-1 rounded ${pagination.page === pageNumber ? 'bg-primary text-background' : 'hover:underline'}`}
+                onClick={() => handlePageChange(pageNumber)}
+                disabled={pagination.page === pageNumber}
+              >{pageNumber}</button>
             )
-          )}
+          }) : 
+          totalPages}
           <button
             className="px-4 py-2 rounded text-base disabled:opacity-50 hover:underline"
-            onClick={() => goToPage(page + 1)}
-            disabled={page === totalPages}
+            onClick={() => handlePageChange(pagination.page + 1)}
+            disabled={pagination.page === totalPages}
             aria-label="Next page"
           >
             &raquo;
@@ -158,8 +134,8 @@ const TranscriptionTable: React.FC<Props> = ({ rows, totalPages }) => {
             className="flex items-center gap-1 ml-2"
             onSubmit={e => {
               e.preventDefault();
-              const p = parseInt(inputPage, 10);
-              if (!isNaN(p)) goToPage(p);
+              const page = parseInt(inputPage, 10);
+              if (!isNaN(page)) goToPage(page);
             }}
           >
             <input
@@ -168,6 +144,7 @@ const TranscriptionTable: React.FC<Props> = ({ rows, totalPages }) => {
               max={totalPages}
               value={inputPage}
               onChange={e => setInputPage(e.target.value)}
+              disabled = { totalPages === 0 }
               className="w-12 px-2 py-1 rounded border border-foreground/20 bg-background text-foreground text-xs focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
             />
             <button

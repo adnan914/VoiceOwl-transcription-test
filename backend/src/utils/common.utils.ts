@@ -26,7 +26,14 @@ export class CommonUtils {
   }
 
   static async downloadWithRetry(url: string, retries: number = 1): Promise<string> {
-    const filePath = path.join(__dirname, "../../src/audio", Date.now() + ".mp3");
+    let filePath: string;
+    if (process.env.NODE_ENV === 'development') {
+      console.log(path.join(__dirname, "../../public/audio"));
+      filePath = path.join(__dirname, "../../public/audio", `${Date.now()}.mp3`);
+    } else {
+      filePath = path.join(__dirname, "../public/audio", `${Date.now()}.mp3`);
+    }
+
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
         const response = await axios.get(url, { responseType: "stream" });

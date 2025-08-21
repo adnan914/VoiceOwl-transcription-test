@@ -2,7 +2,7 @@ import nodemailer from 'nodemailer';
 
 export class NodemailerUtils {
     static async sendResetEmail(email: string, link: string) {
-       
+
         const transporter = nodemailer.createTransport({
             service: process.env.SMTP_SERVICE,
             auth: {

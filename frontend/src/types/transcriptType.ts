@@ -5,3 +5,12 @@ export type TranscriptionType = {
     createdAt: string;
 };
 
+export type TranscriptionInput = {
+    audioUrl: string;
+};
+
+export type TranscriptionListInput = {
+    limit: number;
+    page: number;
+    search: string;
+};

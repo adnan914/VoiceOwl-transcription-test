@@ -9,6 +9,7 @@ export const globalErrorHandler = (
   next: NextFunction
 ) => {
   const statusCode = err.statusCode || 500;
+  console.log("err.message", err.message)
   res.status(statusCode).json({
     success: false,
     message: err.message || MessageUtil.SOMETHING_WENT_WRONG,
