@@ -1,11 +1,29 @@
 "use client";
-
 import Image from "next/image";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import SimpleReactValidator from 'simple-react-validator';
 import { useRouter } from "next/navigation";
+import { restPassword, verifyResetToken } from "@/store/actions/authAction";
+import { ROUTES_PATH } from "@/utils/constant";
+import { forSuccess } from "@/utils/CommonService";
+import { useParams } from "next/navigation";
 
 const ResetPasswordPage = () => {
+    const { token } = useParams();
+    const [ id, setId ] = useState('');
+
+    useEffect(() => {
+        verifyResetToken(token as string)
+        .then((res) => {
+            if (res?.success) {
+                setId(res.data.id);
+            }else{
+                router.push(ROUTES_PATH.LOGIN);
+            }
+        })    
+    }, [])
+
+
     const [form, setForm] = useState({
         password: "",
         confirmPassword: ""
@@ -28,8 +46,14 @@ const ResetPasswordPage = () => {
             form.password === form.confirmPassword
         ) {
             setLoading(true);
-            // Simulate async
-            setTimeout(() => setLoading(false), 1500);
+            restPassword(form.password, id)
+            .then((res) => {
+                if (res?.success) {
+                    router.push(ROUTES_PATH.LOGIN);
+                    forSuccess(res.data.message);
+                }
+            })
+            .finally(() => setLoading(false));
         } else {
             validator.current.showMessages();
             forceUpdate(n => n + 1);

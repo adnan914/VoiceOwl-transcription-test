@@ -1,14 +1,12 @@
 "use client";
-import { AppDispatch } from "../store";
 import * as API from "../serverApiAction/clientApis";
-import * as authReducer from "../reducers/authReducer";
-import Cookies from "js-cookie";
 import { TranscriptionInput, TranscriptionListInput } from "@/types/transcriptType";
+import { API_PATH } from "@/utils/apiPath";
 import { forError } from "@/utils/CommonService";
 
 export const addTranscription = async (body: TranscriptionInput) => {
   try {
-    return await API.post("/transcription", body);
+    return await API.post(API_PATH.TRANSCRIPTION, body);
   } catch (err) {
     console.log(err);
   }
@@ -16,7 +14,7 @@ export const addTranscription = async (body: TranscriptionInput) => {
 
 export const getTranscriptionData = async (parmas: TranscriptionListInput) => {
   try {
-    const res = await API.get("/transcriptionList", parmas);
+    const res = await API.get(API_PATH.TRANSCRIPTION_LIST, parmas);
     if (res.success) return res;
     else forError(res.message);
   } catch (err) {

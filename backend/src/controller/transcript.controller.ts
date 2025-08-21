@@ -21,7 +21,6 @@ class TranscriptController {
 
     public async transcriptList(req: Request, res: Response): Promise<void> {
         const { limit = 10, page = 1, search = '' } = req.query as unknown as TranscriptListInput;
-
         if (!limit) throw new AppError(MessageUtil.LIMIT_ZERO, StatusUtil.BAD_REQUEST);
         const skip = (page - 1) * limit;
         const pipeline: mongoose.PipelineStage[] = [
@@ -54,6 +53,7 @@ class TranscriptController {
 
         const data = result[0]?.data || [];
         const totalCount = result[0]?.totalCount[0]?.count || 0;
+
         res.status(StatusUtil.OK).json({
             success: true,
             message: MessageUtil.DATA_FOUND,

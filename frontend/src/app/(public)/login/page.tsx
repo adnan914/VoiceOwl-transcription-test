@@ -27,7 +27,7 @@ const LoginPage = () => {
             setLoading(true);
             dispatch(login(form))
             .then(res => {
-                if (res.success) {
+                if (res?.success) {
                     forSuccess("Login successfully.");
                     router.push('/');
                 }

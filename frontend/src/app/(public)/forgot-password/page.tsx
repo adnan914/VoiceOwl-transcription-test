@@ -4,22 +4,29 @@ import Image from "next/image";
 import { useState, useRef } from "react";
 import SimpleReactValidator from 'simple-react-validator';
 import { useRouter } from "next/navigation";
+import { forgotPassword } from "@/store/actions/authAction";
+import { ROUTES_PATH } from "@/utils/constant";
+import { forSuccess } from "@/utils/CommonService";
 
 const ForgotPasswordPage = () => {
     const [email, setEmail] = useState("");
     const [, forceUpdate] = useState(0);
     const validator = useRef(new SimpleReactValidator({ autoForceUpdate: { forceUpdate: () => forceUpdate(n => n + 1) } }));
-    const [submitted, setSubmitted] = useState(false);
     const [loading, setLoading] = useState(false);
     const router = useRouter();
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        setSubmitted(true);
         if (validator.current.allValid()) {
             setLoading(true);
-            // Simulate async
-            setTimeout(() => setLoading(false), 1500);
+            forgotPassword(email)
+            .then((res) => {
+                if (res?.success) {
+                    router.push(ROUTES_PATH.LOGIN);
+                    forSuccess(res.data.message);
+                }
+            })
+            .finally(() => setLoading(false));
         } else {
             validator.current.showMessages();
             forceUpdate(n => n + 1);

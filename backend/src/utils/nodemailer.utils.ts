@@ -10,6 +10,7 @@ export class NodemailerUtils {
                 pass: process.env.SMTP_PASS
             }
         });
+
         const mailOptions = {
             to: email,
             subject: 'Reset Your Password',

@@ -5,7 +5,7 @@ import TokenModel from '@/models/token.model';
 import { TokenType } from '@/enums';
 import { StringValue } from 'ms';
 import { MessageUtil, CommonUtils, NodemailerUtils, StatusUtil, AppError } from '../utils';
-import { AuthenticatedRequest, CreateUserInput, ForgotPassInput, LoginInput, ResetInput, UserDocument } from '../types';
+import { AuthenticatedRequest, CreateUserInput, ForgotPassInput, LoginInput, ResetInput, TokenDocument, UserDocument } from '../types';
 
 class AuthController {
 
@@ -54,7 +54,6 @@ class AuthController {
     }
 
     public async logOut(req: Request, res: Response): Promise<void> {
-
         const { _id } = (req as AuthenticatedRequest).user;
         const user = await UserModel.findOne({ _id });
         if (!user) throw new AppError(MessageUtil.INVALID_TOKEN_OR_USED, StatusUtil.BAD_REQUEST);
@@ -93,16 +92,14 @@ class AuthController {
 
 
     public async forgotPassword({ body }: { body: ForgotPassInput }, res: Response): Promise<void> {
-
         const { email } = body;
 
         const user: UserDocument | null = await UserModel.findOne({ email });
-        if (!user) throw new AppError(MessageUtil.INVALID_TOKEN, StatusUtil.FORBIDDEN);
+        if (!user) throw new AppError(MessageUtil.EMAIL_NOT_FOUND, StatusUtil.NOT_FOUND);
 
         const { _id } = user;
         const token = CommonUtils.generateToken({ _id, email, tokenType: TokenType.FORGOTPASSWORD }, process.env.JWT_FORGOT_PASSWORD_SECRET as string, { expiresIn: process.env.JWT_FORGOT_PASSWORD_EXPIRATION as StringValue });
         await TokenModel.create({ userId: _id, token: token, type: TokenType.FORGOTPASSWORD });
-
         const resetLink = `${process.env.RESET_URL}${token}`;
 
         await NodemailerUtils.sendResetEmail(email, resetLink);
@@ -110,19 +107,27 @@ class AuthController {
 
     }
 
+    public async verifyResetToken(req: Request, res: Response): Promise<void> {
+        const { token } = req.body;
+        if (!token) throw new AppError(MessageUtil.NOT_PROVIDED_TOKEN, StatusUtil.FORBIDDEN);
+        const storedToken: TokenDocument | null = await TokenModel.findOne({ token });
+        if (!storedToken) throw new AppError(MessageUtil.INVALID_TOKEN_OR_USED, StatusUtil.BAD_REQUEST);
+
+        const user: UserDocument | null = await UserModel.findOne({ _id: storedToken.userId });
+        if (!user) throw new AppError(MessageUtil.INVALID_TOKEN, StatusUtil.FORBIDDEN);
+        res.status(StatusUtil.OK).json({ success: true, message: MessageUtil.TOKEN_VERIFIED, id: user._id });
+    }
+
     public async resetPassword(req: Request, res: Response): Promise<void> {
+        const { id, newPassword } = req.body as ResetInput;
 
-        const { _id, email } = (req as AuthenticatedRequest).user;
-        const { newPassword } = req.body as ResetInput;
-
-        const user: UserDocument | null = await UserModel.findOne({ email });
+        const user: UserDocument | null = await UserModel.findOne({ _id: id });
         if (!user) throw new AppError(MessageUtil.INVALID_TOKEN, StatusUtil.FORBIDDEN);
 
         user.password = await bcryptjs.hash(newPassword, 10);
         await user.save();
-        await TokenModel.deleteMany({ userId: _id, type: TokenType.FORGOTPASSWORD });
+        await TokenModel.deleteMany({ userId: id, type: TokenType.FORGOTPASSWORD });
         res.status(StatusUtil.OK).json({ success: true, message: MessageUtil.PASS_RESET_SUCC });
-
     }
 }
 

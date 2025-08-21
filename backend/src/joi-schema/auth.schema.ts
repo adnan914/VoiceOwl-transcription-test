@@ -18,7 +18,11 @@ export const forgotPasswordSchema: Joi.ObjectSchema<ForgotPassInput> = Joi.objec
     email: Joi.string().email().required(),
 });
 
+export const verifyResetTokenSchema: Joi.ObjectSchema<ResetInput> = Joi.object({
+    token: Joi.string().required()
+});
+
 export const resetPasswordSchema: Joi.ObjectSchema<ResetInput> = Joi.object({
-    tokenType: Joi.string().required(),
+    id: Joi.string().required(),
     newPassword: Joi.string().required()
 });

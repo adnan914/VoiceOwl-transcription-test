@@ -8,7 +8,7 @@ import { forSuccess, useDebounce } from "@/utils/CommonService";
 import { TranscriptionType, TranscriptionListInput } from "@/types/transcriptType";
 import { useRouter } from "next/navigation";
 import { useAppDispatch } from "@/store/hooks";
-import { logout as logoutAction } from "@/store/reducers/authReducer";
+import { logOut } from "@/store/actions/authAction";
 import { ROUTES_PATH } from "@/utils/constant";
 
 const isAudioUrl = (url: string) => {
@@ -25,6 +25,7 @@ const Transcription = ({list, totalCount, defaultParams} : {list: TranscriptionT
     const [count, setCount] = useState(totalCount);
     const [pagination, setPagination] = useState(defaultParams);
     const [loading, setLoading] = useState(false);
+    const [logoutLoading, setLogoutLoading] = useState(false);
     const debouncedQuery = useDebounce(pagination.search, 500);
     
     useEffect(() => {
@@ -58,8 +59,15 @@ const Transcription = ({list, totalCount, defaultParams} : {list: TranscriptionT
     }
 
     const handleLogout = () => {
-        dispatch(logoutAction());
-        router.push(ROUTES_PATH.LOGIN);
+        setLogoutLoading(true);
+        dispatch(logOut())
+            .then((res: any) => {
+                if (res?.success) {
+                    router.push(ROUTES_PATH.LOGIN);
+                    forSuccess("Logout successfully.");
+                }
+            })
+            .finally(() => setLogoutLoading(false));
     }
 
 
@@ -101,8 +109,13 @@ const Transcription = ({list, totalCount, defaultParams} : {list: TranscriptionT
                     type="button"
                     onClick={handleLogout}
                     className="inline-flex items-center justify-center rounded-md border border-foreground/20 text-foreground px-4 py-2 hover:bg-foreground/10"
+                    disabled={logoutLoading}
                 >
-                    Logout
+                    {logoutLoading ? (
+                        <span className="flex items-center gap-2"><svg className="animate-spin h-5 w-5 text-background" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" /></svg>Loading...</span>
+                    ) : (
+                        "Logout"
+                    )}
                 </button>
             </div>
             <div className="w-full max-w-xl">
