@@ -8,6 +8,7 @@ import { useAppDispatch } from "@/store/hooks";
 import { forSuccess } from "@/utils/CommonService";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { ROUTES_PATH } from "@/utils/constant";
 
 const LoginPage = () => {
     const router = useRouter();
@@ -29,7 +30,7 @@ const LoginPage = () => {
             .then(res => {
                 if (res?.success) {
                     forSuccess("Login successfully.");
-                    router.push('/');
+                    router.push(ROUTES_PATH.HOME);
                 }
             })
             .finally(() => setLoading(false));

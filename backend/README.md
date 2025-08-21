@@ -106,5 +106,40 @@ Base URL: `http://localhost:3001/api/v1/`
 
 ---
 
+## End-to-End (E2E) Testing
+
+This project uses **Jest** and **supertest** for E2E API testing.
+
+### Running E2E Tests
+
+1. **Set up a test database** (recommended: use a separate MongoDB database for testing, e.g., `voiceowl_test`).
+2. **Create a `.env.test` file** in the backend root with the same variables as your development `.env`, but point `DB_URL` to your test database.
+
+Example `.env.test`:
+```env
+PORT=3001
+DB_URL=mongodb://localhost:27017/voiceowl_test
+JWT_SECRET=your_jwt_secret
+JWT_EXPIRATION=1h
+JWT_REFRESH_SECRET=your_jwt_refresh_secret
+JWT_REFRESH_EXPIRATION=7d
+JWT_FORGOT_PASSWORD_SECRET=your_jwt_forgot_secret
+SMTP_SERVICE=gmail
+SMTP_USER=your_email@gmail.com
+SMTP_PASS=your_email_password
+```
+
+3. **Run the tests:**
+```bash
+npm run test:e2e
+```
+
+### Test Structure
+- E2E tests are located in the `test/` directory (e.g., `test/auth.e2e-spec.ts`).
+- Tests cover main API flows such as signup and login.
+- Uses an isolated test database to avoid polluting development data.
+
+---
+
 
 
